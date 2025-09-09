@@ -6,10 +6,14 @@ A Python-based system to typeset swimming workouts into nicely formatted PDFs. T
 
 - **Human-readable format**: Easy to write and edit workout files
 - **Multiple intervals**: Support for different speed groups (lanes A, B, C, etc.)
-- **Automatic calculations**: Total distances, repetitions, and set summaries
-- **PDF generation**: Professional workout sheets with clean formatting
+- **Automatic calculations**: Total distances, repetitions, time estimates, and set summaries
+- **PDF generation**: Professional workout sheets with clean formatting and separate pages per group
+- **Flexible group variations**: Concise syntax for group-specific modifications
+- **Metadata support**: Title, author, date, description, and skill level
+- **Set-level comments**: Comments after set headers are included in output
 - **Validation**: Error checking for common mistakes in workout definitions
-- **Comments**: Inline notes and comments supported
+- **Unit configuration**: Support for both meters and yards
+- **Comprehensive testing**: Full unit test suite included
 
 ## Installation
 
@@ -59,7 +63,7 @@ Cool Down:
 - **REPSx**: Optional repetitions (e.g., `3x`, `8x`)
 - **DISTANCE**: Required distance in meters/yards (e.g., `50`, `200`)
 - **DESCRIPTION**: Required stroke/drill description (`swim`, `kick`, `pull`, `drill`, `easy`, etc.)
-- **@ INTERVAL**: Optional intervals. Use "/" to separate intervals for different groups (legacy format)
+- **@ INTERVAL**: Optional intervals. Use "/" to separate intervals for different groups (legacy format) or "on" instead of "@"
 - **GROUP_VARIATION**: Optional group-specific workout in brackets (see Group Variations below)
 
 #### Group Variations
@@ -99,12 +103,19 @@ Main Set x3:  # This set will be done 3 times
 Add configuration at the top of your `.prac` file (must come before any sets):
 
 - **Units**: `units: meters` or `units: yards` (can also use `m` or `y`)
-  - Determines distance units for the entire workout
-  - Affects total calculations and PDF output
-  - Defaults to meters if not specified
+- **Title**: `title: Practice Name` (appears in PDF header)
+- **Author**: `author: Coach Name` (appears in PDF metadata)  
+- **Date**: `date: 2025-09-09` (appears in PDF metadata)
+- **Description**: `description: Practice description` (appears in PDF)
+- **Level**: `level: Beginner/Intermediate/Advanced` (appears in PDF)
 
 ```
-# Workout in yards
+# Complete metadata example
+title: Friday Morning Practice
+author: Coach Smith
+date: 2025-09-09
+description: Focus on IM technique and endurance
+level: Intermediate
 units: yards
 
 Warmup:
@@ -113,8 +124,25 @@ Warmup:
 
 #### Comments
 - Lines starting with "#" are comments
-- Comments can be placed at the end of lines
+- Comments can be placed at the end of lines after workout items
+- Comments after set headers are included in the PDF output
 - Blank lines are ignored
+
+#### Group Variations - Concise Syntax
+You can now use concise syntax where unspecified parts inherit from the main workout:
+
+```
+# Concise variations - only specify what changes
+4x75 rotating IM @ 1:15 [3x @ 1:25] [2x 50 @ 1:30]
+#   Group A: 4x75 rotating IM @ 1:15
+#   Group B: 3x75 rotating IM @ 1:25 (inherits distance & description)  
+#   Group C: 2x50 rotating IM @ 1:30 (inherits description only)
+
+# Interval-only changes
+2x50 stroke-free @ :50 [@ 1:00]
+#   Group A: 2x50 stroke-free @ :50
+#   Group B: 2x50 stroke-free @ 1:00 (inherits reps, distance, description)
+```
 
 ### Generating Output
 
@@ -186,8 +214,25 @@ Cool Down:
 - `pdf_generator.py` - PDF generation functionality  
 - `README.md` - This documentation
 - `requirements.txt` - Python dependencies
-- `example_set.prac` - Example workout file
-- `test_cases.prac` - More complex example
+- `examples/example.prac` - Example workout file with all features
+- `examples/example.pdf` - Generated PDF output
+- `tests/` - Comprehensive unit test suite
+  - `test_parse.py` - Parser functionality tests
+  - `test_pdf_generator.py` - PDF generation tests  
+  - `test_edge_cases.py` - Edge case and error handling tests
+  - `run_tests.py` - Test runner script
+
+## Running Tests
+
+```bash
+# Run all tests
+python tests/run_tests.py
+
+# Run specific test modules
+python -m unittest tests.test_parse
+python -m unittest tests.test_pdf_generator
+python -m unittest tests.test_edge_cases
+```
 
 ## Error Handling
 

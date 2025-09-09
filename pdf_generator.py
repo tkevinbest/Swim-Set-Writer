@@ -5,7 +5,7 @@ PDF Generator for swim workout files
 import os
 from typing import List
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib import colors
@@ -26,7 +26,7 @@ class PDFWorkoutGenerator:
         self.styles.add(ParagraphStyle(
             name='WorkoutTitle',
             parent=self.styles['Title'],
-            fontSize=24,
+            fontSize=20,
             spaceAfter=0.3*inch,
             alignment=TA_CENTER,
             textColor=colors.darkblue
@@ -36,13 +36,13 @@ class PDFWorkoutGenerator:
         self.styles.add(ParagraphStyle(
             name='SetHeader',
             parent=self.styles['Heading2'],
-            fontSize=16,
+            fontSize=14,
             spaceAfter=0.1*inch,
             spaceBefore=0.2*inch,
             textColor=colors.darkblue,
             borderWidth=1,
             borderColor=colors.darkblue,
-            borderPadding=5,
+            borderPadding=3,
             wordWrap='CJK'  # Ensure text wraps properly
         ))
         
@@ -63,10 +63,10 @@ class PDFWorkoutGenerator:
             alignment=TA_CENTER,
             textColor=colors.gray,
             fontName='Helvetica',
-            spaceBefore=0.05*inch
+            spaceBefore=0.1*inch
         ))
 
-        # Summary style
+        # Grand summary style
         self.styles.add(ParagraphStyle(
             name='GrandSummary',
             parent=self.styles['Normal'],
@@ -74,6 +74,16 @@ class PDFWorkoutGenerator:
             alignment=TA_CENTER,
             textColor=colors.darkgreen,
             fontName='Helvetica-Bold'
+        ))
+
+        # Repeat note style
+        self.styles.add(ParagraphStyle(
+            name='Repeat',
+            parent=self.styles['Normal'],
+            fontSize=12,
+            alignment=TA_LEFT,
+            fontName='Helvetica-Bold',
+            leftIndent=0.6*inch  # Professional indentation
         ))
     
     def generate_pdf(self, config: WorkoutConfig, sets: List[PracticeSet], output_filename: str, title: str = None):
@@ -157,7 +167,7 @@ class PDFWorkoutGenerator:
             # Add repetition multiplier if repeated
             if set_.repeat > 1:
                 multiplier_text = f"<b>{set_.repeat}x:</b>"
-                page_content.append(Paragraph(multiplier_text, self.styles['Normal']))
+                page_content.append(Paragraph(multiplier_text, self.styles['Repeat']))
             
             # Set items for this group
             set_data = []
@@ -167,7 +177,7 @@ class PDFWorkoutGenerator:
                 
                 # Format the item for this group
                 rep_str = f"{variation.reps}x" if variation.reps > 1 else ""
-                interval_str = f" @ {'/'.join(variation.intervals)}" if variation.intervals else ""
+                interval_str = f" on {'/'.join(variation.intervals)}" if variation.intervals else ""
                 # Fix comment rendering with proper HTML formatting for ReportLab
                 note_str = f" <font color='gray' size='10'><i>({item.note})</i></font>" if item.note else ""
                 
@@ -210,7 +220,9 @@ class PDFWorkoutGenerator:
         workout_time = workout.total_time_seconds(group)
         workout_time_str = self._format_time_for_pdf(workout_time)
         total_text = f"WORKOUT TOTAL: {workout.total_distance(group)} {config.units.title()}, {workout_time_str}"
-        page_content.append(Spacer(1, 0.2*inch))
+        
+        # Simple spacing before workout total
+        page_content.append(Spacer(1, 0.3*inch))
         page_content.append(Paragraph(total_text, self.styles['GrandSummary']))
         
         return page_content
