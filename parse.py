@@ -24,10 +24,11 @@ class WorkoutConfig:
         self.level = level
 
 class PracticeSet:
-    def __init__(self, name: str, repeat: int = 1, items: Optional[List['SetItem']] = None):
+    def __init__(self, name: str, repeat: int = 1, items: Optional[List['SetItem']] = None, note: Optional[str] = None):
         self.name = name
         self.repeat = repeat
         self.items = items or []
+        self.note = note
     
     def total_distance(self, group: str = 'A') -> int:
         """Calculate total distance for this set including repetitions"""
@@ -158,7 +159,8 @@ def parse_prac(filename: str) -> tuple[WorkoutConfig, List[PracticeSet]]:
         if header_match:
             set_name = header_match.group(1).strip()
             set_repeat = int(header_match.group(2)) if header_match.group(2) else 1
-            current_set = PracticeSet(name=set_name, repeat=set_repeat)
+            # Use the note from the original line (which includes comments)
+            current_set = PracticeSet(name=set_name, repeat=set_repeat, note=note)
             sets.append(current_set)
             continue
 
@@ -182,8 +184,8 @@ def parse_prac(filename: str) -> tuple[WorkoutConfig, List[PracticeSet]]:
             # Remove brackets from the main line
             main_line = re.sub(bracket_pattern, '', item_line).strip()
             
-            # Parse main workout (A group)
-            item_match = re.match(r'(?:(\d+)x)?(\d+)\s+([^@]+?)(?:\s*@\s*(.+))?$', main_line)
+            # Parse main workout (A group) - allow flexible spacing
+            item_match = re.match(r'(?:(\d+)x\s*)?(\d+)\s+([^@]+?)(?:\s*@\s*(.+))?$', main_line)
             
             if item_match:
                 reps = int(item_match.group(1)) if item_match.group(1) else 1
@@ -208,26 +210,45 @@ def parse_prac(filename: str) -> tuple[WorkoutConfig, List[PracticeSet]]:
                     for i, bracket_content in enumerate(bracket_matches):
                         group_name = chr(ord('B') + i)  # B, C, D, etc.
                         
-                        var_match = re.match(r'(?:(\d+)x)?(\d+)\s+([^@]+?)(?:\s*@\s*(.+))?$', bracket_content.strip())
+                        # Try full format first: "4x75 swim @ 1:30"
+                        var_match = re.match(r'(?:(\d+)x\s*)?(\d+)\s+([^@]+?)(?:\s*@\s*(.+))?$', bracket_content.strip())
+                        
                         if var_match:
+                            # Full format - distance and description specified
                             var_reps = int(var_match.group(1)) if var_match.group(1) else 1
                             var_distance = int(var_match.group(2))
                             var_desc = var_match.group(3).strip()
                             var_intervals = []
                             if var_match.group(4):
                                 var_intervals = [iv.strip() for iv in var_match.group(4).split('/')]
-                            
-                            # Validate variation data
-                            if var_distance <= 0:
-                                raise ValueError(f"Line {line_num}: Group {group_name} distance must be positive: {var_distance}")
-                            if var_reps <= 0:
-                                raise ValueError(f"Line {line_num}: Group {group_name} repetitions must be positive: {var_reps}")
-                            if not var_desc:
-                                raise ValueError(f"Line {line_num}: Group {group_name} description cannot be empty")
-                            if var_intervals and not validate_intervals(var_intervals):
-                                raise ValueError(f"Line {line_num}: Group {group_name} invalid interval format.")
-                            
-                            group_variations[group_name] = GroupVariation(var_reps, var_distance, var_desc, var_intervals)
+                        else:
+                            # Try partial format: "4x50 @ 1:30" or "3x @ 1:30" or "@ 1:30" or "4x"
+                            partial_match = re.match(r'(?:(\d+)x\s*)?(?:(\d+)\s*)?(?:@\s*(.+))?$', bracket_content.strip())
+                            if partial_match and (partial_match.group(1) or partial_match.group(2) or partial_match.group(3)):
+                                # Use main workout's description, but allow override of reps/distance/intervals
+                                var_reps = int(partial_match.group(1)) if partial_match.group(1) else reps
+                                var_distance = int(partial_match.group(2)) if partial_match.group(2) else distance
+                                var_desc = desc  # Always use main workout description
+                                var_intervals = []
+                                if partial_match.group(3):
+                                    var_intervals = [iv.strip() for iv in partial_match.group(3).split('/')]
+                                else:
+                                    var_intervals = intervals  # Use main workout intervals
+                            else:
+                                # If we can't parse it, skip this variation
+                                continue
+                        
+                        # Validate variation data
+                        if var_distance <= 0:
+                            raise ValueError(f"Line {line_num}: Group {group_name} distance must be positive: {var_distance}")
+                        if var_reps <= 0:
+                            raise ValueError(f"Line {line_num}: Group {group_name} repetitions must be positive: {var_reps}")
+                        if not var_desc:
+                            raise ValueError(f"Line {line_num}: Group {group_name} description cannot be empty")
+                        if var_intervals and not validate_intervals(var_intervals):
+                            raise ValueError(f"Line {line_num}: Group {group_name} invalid interval format.")
+                        
+                        group_variations[group_name] = GroupVariation(var_reps, var_distance, var_desc, var_intervals)
                 
                 item = SetItem(reps, distance, desc, intervals, note, group_variations)
                 current_set.items.append(item)
@@ -300,7 +321,10 @@ class WorkoutSummary:
         lines.append("=" * 50)
         
         for set_ in self.sets:
-            lines.append(f"\n{set_.name.upper()}" + (f" x{set_.repeat}" if set_.repeat > 1 else ""))
+            set_header = f"\n{set_.name.upper()}" + (f" x{set_.repeat}" if set_.repeat > 1 else "")
+            if set_.note:
+                set_header += f" # {set_.note}"
+            lines.append(set_header)
             lines.append("-" * 30)
             
             for item in set_.items:
@@ -337,7 +361,10 @@ class WorkoutSummary:
         lines.append("=" * 50)
         
         for set_ in self.sets:
-            lines.append(f"\n{set_.name.upper()}" + (f" x{set_.repeat}" if set_.repeat > 1 else ""))
+            set_header = f"\n{set_.name.upper()}" + (f" x{set_.repeat}" if set_.repeat > 1 else "")
+            if set_.note:
+                set_header += f" # {set_.note}"
+            lines.append(set_header)
             lines.append("-" * 30)
             
             for item in set_.items:

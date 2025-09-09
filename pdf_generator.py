@@ -42,7 +42,8 @@ class PDFWorkoutGenerator:
             textColor=colors.darkblue,
             borderWidth=1,
             borderColor=colors.darkblue,
-            borderPadding=5
+            borderPadding=5,
+            wordWrap='CJK'  # Ensure text wraps properly
         ))
         
         # Set item style
@@ -67,9 +68,12 @@ class PDFWorkoutGenerator:
     def generate_pdf(self, config: WorkoutConfig, sets: List[PracticeSet], output_filename: str, title: str = None):
         """Generate a PDF from workout sets with separate pages for each group"""
         
-        # Use title from config if not provided
+        # Use title from config if not provided, prioritize config.title
         if title is None:
             title = config.title or "Swim Workout"
+        elif config.title:
+            # If config has a title, use that instead of filename-derived title
+            title = config.title
         
         # Create document with metadata
         doc = SimpleDocTemplate(
@@ -107,9 +111,8 @@ class PDFWorkoutGenerator:
         """Generate content for a specific group page"""
         page_content = []
         
-        # Title with group
-        group_title = f"{title} - Group {group.upper()}"
-        page_content.append(Paragraph(group_title, self.styles['WorkoutTitle']))
+        # Title without group in main title
+        page_content.append(Paragraph(title, self.styles['WorkoutTitle']))
         
         # Metadata information
         metadata_lines = []
@@ -133,10 +136,12 @@ class PDFWorkoutGenerator:
         
         # Process each set for this group
         for set_ in sets:
-            # Set header
+            # Set header with optional comment
             set_header = f"{set_.name}"
             if set_.repeat > 1:
                 set_header += f" x{set_.repeat}"
+            if set_.note:
+                set_header += f" <font color='gray' size='12'><i>({set_.note})</i></font>"
             
             page_content.append(Paragraph(set_header, self.styles['SetHeader']))
             
@@ -204,11 +209,7 @@ class PDFWorkoutGenerator:
             base_name = os.path.splitext(prac_filename)[0]
             output_filename = f"{base_name}.pdf"
         
-        # Generate title if not provided
-        if title is None:
-            title = os.path.splitext(os.path.basename(prac_filename))[0].replace('_', ' ').title()
-        
-        # Generate the PDF
+        # Generate the PDF - let generate_pdf handle title logic
         self.generate_pdf(config, sets, output_filename, title)
         
         return output_filename
