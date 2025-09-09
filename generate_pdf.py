@@ -27,9 +27,9 @@ class PDFWorkoutGenerator:
             name='WorkoutTitle',
             parent=self.styles['Title'],
             fontSize=20,
-            spaceAfter=0.3*inch,
+            spaceAfter=0.15*inch,
             alignment=TA_CENTER,
-            textColor=colors.darkblue
+            textColor=colors.navy
         ))
         
         # Set header style
@@ -38,11 +38,8 @@ class PDFWorkoutGenerator:
             parent=self.styles['Heading2'],
             fontSize=14,
             spaceAfter=0.1*inch,
-            spaceBefore=0.2*inch,
-            textColor=colors.darkblue,
-            borderWidth=1,
-            borderColor=colors.darkblue,
-            borderPadding=3,
+            spaceBefore=0.1*inch,
+            textColor=colors.navy,
             wordWrap='CJK'  # Ensure text wraps properly
         ))
         
@@ -138,16 +135,19 @@ class PDFWorkoutGenerator:
         # Metadata information
         metadata_lines = []
         if config.author:
-            metadata_lines.append(f"<b>Coach:</b> {config.author}")
+            metadata_lines.append(f"<b>Author:</b> {config.author}")
         if config.date:
             metadata_lines.append(f"<b>Date:</b> {config.date}")
         if config.level:
             metadata_lines.append(f"<b>Level:</b> {config.level}")
+        if config.course:
+            metadata_lines.append(f"<b>Pool:</b> {config.course} {config.units.title()}")
+        else:
+            metadata_lines.append(f"<b>Units:</b> {config.units.title()}")
+        metadata_lines.append(f"<b>Group:</b> {group.upper()}")
+
         if config.description:
             metadata_lines.append(f"<b>Description:</b> {config.description}")
-        
-        metadata_lines.append(f"<b>Units:</b> {config.units.title()}")
-        metadata_lines.append(f"<b>Group:</b> {group.upper()}")
         
         # Add metadata as a single paragraph
         if metadata_lines:
@@ -160,7 +160,7 @@ class PDFWorkoutGenerator:
             # Set header without repetition count
             set_header = f"{set_.name}"
             if set_.note:
-                set_header += f" <font color='gray' size='12'><i>({set_.note})</i></font>"
+                set_header += f" <font color='gray' size='11'>{set_.note}</font>"
             
             page_content.append(Paragraph(set_header, self.styles['SetHeader']))
             
@@ -179,11 +179,11 @@ class PDFWorkoutGenerator:
                 rep_str = f"{variation.reps}x" if variation.reps > 1 else ""
                 interval_str = f" on {'/'.join(variation.intervals)}" if variation.intervals else ""
                 # Fix comment rendering with proper HTML formatting for ReportLab
-                note_str = f" <font color='gray' size='10'><i>({item.note})</i></font>" if item.note else ""
+                note_str = f" <font color='gray' size='10'>{item.note}</font>" if item.note else ""
                 
                 item_text = f"{rep_str}{variation.distance} {variation.desc}{interval_str}{note_str}"
             
-                distance_text = f"{item.total_distance(group)} {config.unit_symbol}"
+                distance_text = f"<font color='gray' size='10'>{item.total_distance(group)} {config.unit_symbol}</font>"
                 set_data.append([item_text, distance_text])
             
             # Create table for set items using Paragraphs for HTML formatting
@@ -193,7 +193,7 @@ class PDFWorkoutGenerator:
                 for item_text, distance_text in set_data:
                     formatted_data.append([
                         Paragraph(item_text, self.styles['SetItem']),
-                        distance_text
+                        Paragraph(distance_text, self.styles['SetItem'])
                     ])
                 
                 table = Table(formatted_data, colWidths=[5*inch, 1*inch])

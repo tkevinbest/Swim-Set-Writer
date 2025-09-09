@@ -9,7 +9,7 @@ A Python-based system to typeset swimming workouts into nicely formatted PDFs. T
 - **Automatic calculations**: Total distances, repetitions, time estimates, and set summaries
 - **PDF generation**: Professional workout sheets with clean formatting and separate pages per group
 - **Flexible group variations**: Concise syntax for group-specific modifications
-- **Metadata support**: Title, author, date, description, and skill level
+- **Metadata support**: Title, author, date, description, skill level, and pool course
 - **Set-level comments**: Comments after set headers are included in output
 - **Validation**: Error checking for common mistakes in workout definitions
 - **Unit configuration**: Support for both meters and yards
@@ -108,6 +108,7 @@ Add configuration at the top of your `.prac` file (must come before any sets):
 - **Date**: `date: 2025-09-09` (appears in PDF metadata)
 - **Description**: `description: Practice description` (appears in PDF)
 - **Level**: `level: Beginner/Intermediate/Advanced` (appears in PDF)
+- **Course**: `course: short` or `course: long` (appears as "Pool: Short Course Meters" or "Pool: Long Course Yards")
 
 ```
 # Complete metadata example
@@ -116,6 +117,7 @@ author: Coach Smith
 date: 2025-09-09
 description: Focus on IM technique and endurance
 level: Intermediate
+course: short
 units: yards
 
 Warmup:
@@ -187,6 +189,7 @@ Cool Down:
 # Advanced workout with A and B group variations
 title: Multi-Group Training
 author: Coach Smith
+course: long
 units: yards
 
 Warmup:

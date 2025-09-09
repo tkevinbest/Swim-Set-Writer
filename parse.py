@@ -3,7 +3,7 @@ from typing import List, Dict, Any, Optional
 
 class WorkoutConfig:
     def __init__(self, units: str = "meters", title: str = None, author: str = None, 
-                 date: str = None, description: str = None, level: str = None):
+                 date: str = None, description: str = None, level: str = None, course: str = None):
         self.units = units.lower()
         if self.units not in ["meters", "yards", "m", "y"]:
             raise ValueError(f"Invalid units: {units}. Must be 'meters', 'yards', 'm', or 'y'")
@@ -15,6 +15,15 @@ class WorkoutConfig:
         else:
             self.units = "yards"
             self.unit_symbol = "y"
+        
+        # Validate course
+        if course is not None:
+            course_lower = course.lower()
+            if course_lower not in ["short", "long"]:
+                raise ValueError(f"Invalid course: {course}. Must be 'short' or 'long'")
+            self.course = course.capitalize() + " Course"
+        else:
+            self.course = None
         
         # Metadata fields
         self.title = title
@@ -177,7 +186,7 @@ def parse_prac(filename: str) -> tuple[WorkoutConfig, List[PracticeSet]]:
                 value = config_match.group(2).strip()
                 
                 # Validate known metadata fields
-                valid_fields = ['units', 'title', 'author', 'date', 'description', 'level']
+                valid_fields = ['units', 'title', 'author', 'date', 'description', 'level', 'course']
                 if key in valid_fields:
                     metadata[key] = value
                     continue
@@ -300,7 +309,8 @@ def parse_prac(filename: str) -> tuple[WorkoutConfig, List[PracticeSet]]:
         author=metadata.get('author'),
         date=metadata.get('date'),
         description=metadata.get('description'),
-        level=metadata.get('level')
+        level=metadata.get('level'),
+        course=metadata.get('course')
     )
     
     return config, sets
