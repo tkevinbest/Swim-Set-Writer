@@ -1,0 +1,23 @@
+# Example practice file 
+title: Example IM Practice
+author: Kevin Best
+date: 2025-09-09
+description: An example IM practice that showcases the features of the set writer tool
+units: yards
+
+Warmup: # 200 SKPS
+  200 swim @ 3:00  # easy
+  200 kick @ 5:00  # easy
+  200 pull @ 3:00
+  200 swim @ 3:00
+
+Pre-Set x2: # Round 1 free, round 2 primary non-free
+  4x25 BEFE @ :30 # Build, easy, fast, easy by 25
+  100 easy @ 2:00  # recovery
+
+Main Set x4:
+  4x 75 rotating IM @ 1:15 [3x 50 @ 1:25]  
+  2x 50 stroke-free @ :50 [@ 1:00] 
+
+Cool Down:
+  200 choice @ 4:00 
