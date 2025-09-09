@@ -35,6 +35,11 @@ class PracticeSet:
         set_distance = sum(item.total_distance(group) for item in self.items)
         return set_distance * self.repeat
     
+    def total_time_seconds(self, group: str = 'A') -> int:
+        """Calculate total time in seconds for this set including repetitions"""
+        set_time = sum(item.total_time_seconds(group) for item in self.items)
+        return set_time * self.repeat
+    
     def get_available_groups(self) -> List[str]:
         """Get all groups available in this set"""
         all_groups = set(['A'])
@@ -81,6 +86,35 @@ class SetItem:
         """Calculate total distance for this item for a specific group"""
         variation = self.get_variation_for_group(group)
         return variation.total_distance()
+    
+    def total_time_seconds(self, group: str = 'A') -> int:
+        """Calculate total time in seconds for this item for a specific group"""
+        variation = self.get_variation_for_group(group)
+        if not variation.intervals:
+            return 0  # No time if no intervals specified
+        
+        # Use the first interval (A group interval) for time calculation
+        interval = variation.intervals[0] if variation.intervals else "0:00"
+        seconds = self._parse_interval_to_seconds(interval)
+        return seconds * variation.reps
+    
+    def _parse_interval_to_seconds(self, interval: str) -> int:
+        """Parse interval string to seconds (e.g., '1:30' -> 90, ':45' -> 45)"""
+        try:
+            if interval.startswith(':'):
+                # Format like ":45"
+                return int(interval[1:])
+            elif ':' in interval:
+                parts = interval.split(':')
+                if len(parts) == 2:
+                    # Format like "1:30"
+                    return int(parts[0]) * 60 + int(parts[1])
+                elif len(parts) == 3:
+                    # Format like "1:15:30" (hours:minutes:seconds)
+                    return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+            return 0
+        except (ValueError, IndexError):
+            return 0
     
     def get_available_groups(self) -> List[str]:
         """Get list of all available groups for this item"""
@@ -289,6 +323,24 @@ class WorkoutSummary:
         """Calculate total workout distance for a specific group"""
         return sum(set_.total_distance(group) for set_ in self.sets)
     
+    def total_time_seconds(self, group: str = 'A') -> int:
+        """Calculate total workout time in seconds for a specific group"""
+        return sum(set_.total_time_seconds(group) for set_ in self.sets)
+    
+    def format_time(self, seconds: int) -> str:
+        """Format seconds into MM:SS or H:MM:SS format"""
+        if seconds == 0:
+            return "No intervals"
+        
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
+        secs = seconds % 60
+        
+        if hours > 0:
+            return f"{hours}:{minutes:02d}:{secs:02d}"
+        else:
+            return f"{minutes}:{secs:02d}"
+    
     def format_workout(self, group: str = None) -> str:
         """Format the workout for display, optionally for a specific group"""
         if group is None:
@@ -321,19 +373,34 @@ class WorkoutSummary:
         lines.append("=" * 50)
         
         for set_ in self.sets:
-            set_header = f"\n{set_.name.upper()}" + (f" x{set_.repeat}" if set_.repeat > 1 else "")
+            # Set header without repetition
+            set_header = f"\n{set_.name.upper()}"
             if set_.note:
                 set_header += f" # {set_.note}"
             lines.append(set_header)
             lines.append("-" * 30)
             
-            for item in set_.items:
-                lines.append(str(item))
+            # Add opening brace if repeated
+            if set_.repeat > 1:
+                lines.append("{")
             
-            lines.append(f"Set Total: {set_.total_distance()}{self.config.unit_symbol}")
+            for item in set_.items:
+                item_str = str(item)
+                # Add extra indentation if inside braces
+                if set_.repeat > 1:
+                    item_str = "  " + item_str
+                lines.append(item_str)
+            
+            # Add closing brace with multiplier if repeated
+            if set_.repeat > 1:
+                lines.append(f"}} x{set_.repeat}")
+            
+            set_time = set_.total_time_seconds()
+            lines.append(f"Set Total: {set_.total_distance()} {self.config.unit_symbol}, {self.format_time(set_time)}")
         
         lines.append("=" * 50)
-        lines.append(f"WORKOUT TOTAL: {self.total_distance()}{self.config.unit_symbol}")
+        workout_time = self.total_time_seconds()
+        lines.append(f"WORKOUT TOTAL: {self.total_distance()} {self.config.unit_symbol}, {self.format_time(workout_time)}")
         lines.append("=" * 50)
         
         return "\n".join(lines)
@@ -361,23 +428,39 @@ class WorkoutSummary:
         lines.append("=" * 50)
         
         for set_ in self.sets:
-            set_header = f"\n{set_.name.upper()}" + (f" x{set_.repeat}" if set_.repeat > 1 else "")
+            # Set header without repetition
+            set_header = f"\n{set_.name.upper()}"
             if set_.note:
                 set_header += f" # {set_.note}"
             lines.append(set_header)
             lines.append("-" * 30)
+            
+            # Add opening brace if repeated
+            if set_.repeat > 1:
+                lines.append("{")
             
             for item in set_.items:
                 variation = item.get_variation_for_group(group)
                 interval_str = f" @ {'/'.join(variation.intervals)}" if variation.intervals else ""
                 note_str = f" # {item.note}" if item.note else ""
                 rep_str = f"{variation.reps}x" if variation.reps > 1 else ""
-                lines.append(f"  {rep_str}{variation.distance} {variation.desc}{interval_str}{note_str}")
+                item_line = f"  {rep_str}{variation.distance} {variation.desc}{interval_str}{note_str}"
+                
+                # Add extra indentation if inside braces
+                if set_.repeat > 1:
+                    item_line = "  " + item_line
+                lines.append(item_line)
             
-            lines.append(f"Set Total: {set_.total_distance(group)}{self.config.unit_symbol}")
+            # Add closing brace with multiplier if repeated
+            if set_.repeat > 1:
+                lines.append(f"}} x{set_.repeat}")
+            
+            set_time = set_.total_time_seconds(group)
+            lines.append(f"Set Total: {set_.total_distance(group)} {self.config.unit_symbol}, {self.format_time(set_time)}")
         
         lines.append("=" * 50)
-        lines.append(f"WORKOUT TOTAL: {self.total_distance(group)}{self.config.unit_symbol}")
+        workout_time = self.total_time_seconds(group)
+        lines.append(f"WORKOUT TOTAL: {self.total_distance(group)} {self.config.unit_symbol}, {self.format_time(workout_time)}")
         lines.append("=" * 50)
         
         return "\n".join(lines)

@@ -59,6 +59,17 @@ class PDFWorkoutGenerator:
         self.styles.add(ParagraphStyle(
             name='Summary',
             parent=self.styles['Normal'],
+            fontSize=11,
+            alignment=TA_CENTER,
+            textColor=colors.gray,
+            fontName='Helvetica',
+            spaceBefore=0.05*inch
+        ))
+
+        # Summary style
+        self.styles.add(ParagraphStyle(
+            name='GrandSummary',
+            parent=self.styles['Normal'],
             fontSize=14,
             alignment=TA_CENTER,
             textColor=colors.darkgreen,
@@ -136,14 +147,17 @@ class PDFWorkoutGenerator:
         
         # Process each set for this group
         for set_ in sets:
-            # Set header with optional comment
+            # Set header without repetition count
             set_header = f"{set_.name}"
-            if set_.repeat > 1:
-                set_header += f" x{set_.repeat}"
             if set_.note:
                 set_header += f" <font color='gray' size='12'><i>({set_.note})</i></font>"
             
             page_content.append(Paragraph(set_header, self.styles['SetHeader']))
+            
+            # Add repetition multiplier if repeated
+            if set_.repeat > 1:
+                multiplier_text = f"<b>{set_.repeat}x:</b>"
+                page_content.append(Paragraph(multiplier_text, self.styles['Normal']))
             
             # Set items for this group
             set_data = []
@@ -158,8 +172,8 @@ class PDFWorkoutGenerator:
                 note_str = f" <font color='gray' size='10'><i>({item.note})</i></font>" if item.note else ""
                 
                 item_text = f"{rep_str}{variation.distance} {variation.desc}{interval_str}{note_str}"
-                distance_text = f"{item.total_distance(group)}{config.unit_symbol}"
-                
+            
+                distance_text = f"{item.total_distance(group)} {config.unit_symbol}"
                 set_data.append([item_text, distance_text])
             
             # Create table for set items using Paragraphs for HTML formatting
@@ -184,18 +198,36 @@ class PDFWorkoutGenerator:
                 ]))
                 page_content.append(table)
             
-            # Set total for this group
-            set_total = f"Set Total: {set_.total_distance(group)}{config.unit_symbol}"
+            # Set total for this group (distance and time)
+            set_time = set_.total_time_seconds(group)
+            time_str = self._format_time_for_pdf(set_time)
+            set_total = f"Distance: {set_.total_distance(group)} {config.unit_symbol}, Duration: {time_str}"
             page_content.append(Paragraph(set_total, self.styles['Summary']))
             page_content.append(Spacer(1, 0.15*inch))
         
-        # Workout total for this group
+        # Workout total for this group (distance and time)
         workout = WorkoutSummary(config, sets)
-        total_text = f"WORKOUT TOTAL: {workout.total_distance(group)}{config.unit_symbol}"
+        workout_time = workout.total_time_seconds(group)
+        workout_time_str = self._format_time_for_pdf(workout_time)
+        total_text = f"WORKOUT TOTAL: {workout.total_distance(group)} {config.units.title()}, {workout_time_str}"
         page_content.append(Spacer(1, 0.2*inch))
-        page_content.append(Paragraph(total_text, self.styles['Summary']))
+        page_content.append(Paragraph(total_text, self.styles['GrandSummary']))
         
         return page_content
+    
+    def _format_time_for_pdf(self, seconds: int) -> str:
+        """Format seconds into MM:SS or H:MM:SS format for PDF"""
+        if seconds == 0:
+            return "No intervals"
+        
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
+        secs = seconds % 60
+        
+        if hours > 0:
+            return f"{hours}:{minutes:02d}:{secs:02d}"
+        else:
+            return f"{minutes}:{secs:02d}"
     
     def generate_from_file(self, prac_filename: str, output_filename: str = None, title: str = None):
         """Generate PDF directly from a .prac file"""
