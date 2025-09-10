@@ -30,7 +30,3 @@ jobs:
     - name: Run tests
       run: |
         python tests/run_tests.py
-    
-    - name: Run tests with unittest module
-      run: |
-        python -m unittest tests.test_parse tests.test_pdf_generator tests.test_edge_cases -v
