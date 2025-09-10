@@ -1,5 +1,8 @@
 # Swim Practice Set Writer
 
+[![Tests](https://github.com/tkevinbest/Swim-Set-Writer/workflows/Quick%20Test/badge.svg)](https://github.com/tkevinbest/Swim-Set-Writer/actions)
+[![Python Versions](https://github.com/tkevinbest/Swim-Set-Writer/workflows/Run%20Tests/badge.svg)](https://github.com/tkevinbest/Swim-Set-Writer/actions)
+
 A simple tool to write swimming workouts in plain text and generate professional PDFs.
 
 ## Quick Start
@@ -245,6 +248,17 @@ python -m unittest tests.test_parse
 python -m unittest tests.test_pdf_generator
 python -m unittest tests.test_edge_cases
 ```
+
+### Continuous Integration
+
+This project uses GitHub Actions to automatically run tests on every push to main:
+
+- **Multi-version testing**: Tests run on Python 3.8, 3.9, 3.10, 3.11, and 3.12
+- **Cross-platform testing**: Tests run on both Ubuntu and Windows
+- **Automatic execution**: Tests run on every push and pull request
+- **Status badges**: Check the Actions tab to see test results
+
+The CI/CD pipeline ensures code quality and compatibility across different Python versions and operating systems.
 
 ## Future Plans
 
