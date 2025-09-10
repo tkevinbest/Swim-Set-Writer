@@ -3,6 +3,7 @@
 [![Tests](https://github.com/tkevinbest/Swim-Set-Writer/workflows/Quick%20Test/badge.svg)](https://github.com/tkevinbest/Swim-Set-Writer/actions)
 [![Python Versions](https://github.com/tkevinbest/Swim-Set-Writer/workflows/Test%20Python%20Versions/badge.svg)](https://github.com/tkevinbest/Swim-Set-Writer/actions)
 [![Windows](https://github.com/tkevinbest/Swim-Set-Writer/workflows/Windows%20Test/badge.svg)](https://github.com/tkevinbest/Swim-Set-Writer/actions)
+[![Coverage](https://codecov.io/gh/tkevinbest/Swim-Set-Writer/branch/master/graph/badge.svg)](https://codecov.io/gh/tkevinbest/Swim-Set-Writer)
 
 A simple tool to write swimming workouts in plain text and generate professional PDFs.
 

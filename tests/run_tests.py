@@ -21,6 +21,29 @@ def run_all_tests():
     
     return result.wasSuccessful()
 
+def run_tests_with_coverage():
+    """Run tests with coverage reporting"""
+    try:
+        import coverage
+        cov = coverage.Coverage()
+        cov.start()
+        
+        success = run_all_tests()
+        
+        cov.stop()
+        cov.save()
+        
+        # Print coverage report
+        print("\n" + "="*50)
+        print("COVERAGE REPORT")
+        print("="*50)
+        cov.report()
+        
+        return success
+    except ImportError:
+        print("Coverage not available, running tests without coverage")
+        return run_all_tests()
+
 def run_specific_test(test_name):
     """Run a specific test module"""
     loader = unittest.TestLoader()
@@ -33,9 +56,13 @@ def run_specific_test(test_name):
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
-        # Run specific test
-        test_name = sys.argv[1]
-        success = run_specific_test(test_name)
+        if sys.argv[1] == '--coverage':
+            # Run all tests with coverage
+            success = run_tests_with_coverage()
+        else:
+            # Run specific test
+            test_name = sys.argv[1]
+            success = run_specific_test(test_name)
     else:
         # Run all tests
         success = run_all_tests()

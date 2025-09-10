@@ -1,1 +1,2 @@
 reportlab>=4.0.0
+coverage>=7.0.0
