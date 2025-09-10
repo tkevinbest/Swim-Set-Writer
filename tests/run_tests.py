@@ -33,6 +33,9 @@ def run_tests_with_coverage():
         cov.stop()
         cov.save()
         
+        # Generate XML report for Codecov
+        cov.xml_report(outfile='coverage.xml')
+        
         # Print coverage report
         print("\n" + "="*50)
         print("COVERAGE REPORT")
