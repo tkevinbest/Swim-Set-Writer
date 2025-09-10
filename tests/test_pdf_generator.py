@@ -11,7 +11,7 @@ from unittest.mock import patch, MagicMock
 # Add parent directory to path so we can import our modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from pdf_generator import PDFWorkoutGenerator
+from generate_pdf import PDFWorkoutGenerator
 from parse import WorkoutConfig, PracticeSet, SetItem
 
 
@@ -52,7 +52,7 @@ class TestPDFWorkoutGenerator(unittest.TestCase):
         self.assertIn('SetItem', self.generator.styles)
         self.assertIn('Summary', self.generator.styles)
     
-    @patch('pdf_generator.SimpleDocTemplate')
+    @patch('generate_pdf.SimpleDocTemplate')
     def test_generate_pdf_basic(self, mock_doc_class):
         """Test basic PDF generation"""
         mock_doc = MagicMock()
@@ -82,7 +82,7 @@ class TestPDFWorkoutGenerator(unittest.TestCase):
         finally:
             os.unlink(temp_file.name)
     
-    @patch('pdf_generator.SimpleDocTemplate')
+    @patch('generate_pdf.SimpleDocTemplate')
     def test_generate_pdf_with_comments(self, mock_doc_class):
         """Test PDF generation with comments"""
         mock_doc = MagicMock()
@@ -110,7 +110,7 @@ class TestPDFWorkoutGenerator(unittest.TestCase):
             self.generator.generate_from_file("nonexistent.prac")
     
     @patch('parse.parse_prac')
-    @patch('pdf_generator.PDFWorkoutGenerator.generate_pdf')
+    @patch('generate_pdf.PDFWorkoutGenerator.generate_pdf')
     def test_generate_from_file_success(self, mock_generate, mock_parse):
         """Test successful generation from file"""
         mock_parse.return_value = (self.config, self.sets)
@@ -139,7 +139,7 @@ class TestPDFWorkoutGenerator(unittest.TestCase):
             os.unlink(temp_prac.name)
     
     @patch('parse.parse_prac')
-    @patch('pdf_generator.PDFWorkoutGenerator.generate_pdf')
+    @patch('generate_pdf.PDFWorkoutGenerator.generate_pdf')
     def test_generate_with_custom_title(self, mock_generate, mock_parse):
         """Test generation with custom title override"""
         mock_parse.return_value = (self.config, self.sets)
@@ -155,7 +155,7 @@ class TestPDFWorkoutGenerator(unittest.TestCase):
             # Verify PDF generation was called with custom title
             mock_generate.assert_called_once()
             call_args = mock_generate.call_args
-            self.assertEqual(call_args[1]['title'], custom_title)
+            self.assertEqual(call_args[0][3], custom_title)  # title is 4th positional argument
             
         finally:
             os.unlink(temp_prac.name)

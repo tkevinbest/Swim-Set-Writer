@@ -53,6 +53,29 @@ class TestWorkoutConfig(unittest.TestCase):
         with self.assertRaises(ValueError):
             WorkoutConfig(units="kilometers")
     
+    def test_course_validation(self):
+        """Test course validation"""
+        # Valid course values
+        config1 = WorkoutConfig(course="short")
+        self.assertEqual(config1.course, "Short Course")
+        
+        config2 = WorkoutConfig(course="long")
+        self.assertEqual(config2.course, "Long Course")
+        
+        config3 = WorkoutConfig(course="SHORT")  # Test case insensitive
+        self.assertEqual(config3.course, "Short Course")
+        
+        # Invalid course values
+        with self.assertRaises(ValueError):
+            WorkoutConfig(course="25")
+        
+        with self.assertRaises(ValueError):
+            WorkoutConfig(course="olympic")
+        
+        # None course should be allowed
+        config4 = WorkoutConfig(course=None)
+        self.assertIsNone(config4.course)
+    
     def test_metadata_fields(self):
         """Test metadata fields are stored correctly"""
         config = WorkoutConfig(
@@ -334,7 +357,7 @@ class TestWorkoutSummary(unittest.TestCase):
         self.assertIn("TEST WORKOUT", formatted)
         self.assertIn("Coach: Coach Test", formatted)
         self.assertIn("Units: Yards", formatted)
-        self.assertIn("100y", formatted)
+        self.assertIn("100 y", formatted)
 
 
 if __name__ == '__main__':
