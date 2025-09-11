@@ -59,13 +59,6 @@ st.markdown("""
         outline: 2px solid #1f77b4;
         outline-offset: 2px;
     }
-    /* Indentation helper */
-    .indent-helper {
-        font-family: monospace;
-        font-size: 0.8rem;
-        color: #666;
-        margin-bottom: 0.5rem;
-    }
 </style>
 
 <script>
@@ -199,7 +192,6 @@ Cool Down:
         
         # Text editor
         st.markdown("**💡 Tip:** Use 2 spaces for indentation (not tabs). Copy the example below to get started.")
-        st.markdown('<div class="indent-helper">Indentation: Use 2 spaces (not tabs) for workout items under set headers</div>', unsafe_allow_html=True)
         
         workout_text = st.text_area(
             "Enter your workout in .prac format:",
