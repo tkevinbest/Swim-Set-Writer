@@ -114,7 +114,7 @@ def main():
         st.markdown("""
         **Quick Reference:**
         - [📚 Full README](https://github.com/tkevinbest/Swim-Set-Writer/blob/master/README.md)
-        - [📝 Complete Syntax](https://github.com/tkevinbest/Swim-Set-Writer/blob/master/SYNTAX.md)
+        - [📝 `.prac` Syntax](https://github.com/tkevinbest/Swim-Set-Writer/blob/master/SYNTAX.md)
         """)
         
         # Show full syntax in expander
