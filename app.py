@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
 def main():
     # Header
     st.markdown('<h1 class="main-header">🏊‍♂️ Swim Set Writer</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="sub-header">Create well-formatted swim workout PDFs in your browser</p>', unsafe_allow_html=True)
+    st.markdown('<p class="sub-header">Create well-formatted swim workout PDFs in your browser for free</p>', unsafe_allow_html=True)
     
     # Sidebar with examples and help
     with st.sidebar:
@@ -202,9 +202,13 @@ Cool Down:
         )
         if uploaded_file is not None:
             try:
-                uploaded_text = uploaded_file.read().decode("utf-8", errors="ignore")
-                st.session_state["workout_editor"] = uploaded_text
-                st.success("Loaded " + uploaded_file.name + " file into the editor.")
+                size_hint = getattr(uploaded_file, "size", None)
+                upload_token = f"{uploaded_file.name}:{size_hint}"
+                if st.session_state.get("uploaded_token") != upload_token:
+                    uploaded_text = uploaded_file.read().decode("utf-8", errors="ignore")
+                    st.session_state["workout_editor"] = uploaded_text
+                    st.session_state["uploaded_token"] = upload_token
+                    st.success("Loaded " + uploaded_file.name + " file into the editor.")
             except Exception as e:
                 st.error(f"Failed to read uploaded file: {str(e)}")
         
