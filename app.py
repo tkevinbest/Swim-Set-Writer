@@ -307,11 +307,17 @@ Cool Down:
                 # Display preview
                 st.subheader("Workout Summary")
                 st.write(f"**Title:** {config.title or 'Untitled'}")
-                st.write(f"**Units:** {config.units.title()}")
                 if config.course:
-                    st.write(f"**Course:** {config.course}")
+                    st.write(f"**Pool:** {config.course} {config.units.title()}")
                 if config.author:
                     st.write(f"**Author:** {config.author}")
+
+                # Workout totals
+                from parse import WorkoutSummary
+                workout = WorkoutSummary(config, sets)
+                st.write(f"**Total Distance:** {workout.total_distance()} {config.unit_symbol}")
+                if workout.total_time_seconds() > 0:
+                    st.write(f"**Total Time:** {workout.format_time(workout.total_time_seconds())}")
                 
                 st.subheader("Sets")
                 for i, set_ in enumerate(sets, 1):
@@ -324,13 +330,7 @@ Cool Down:
                             st.write(f"• {item}")
                         st.write(f"**Total Distance:** {set_.total_distance()} {config.unit_symbol}")
                 
-                # Workout totals
-                from parse import WorkoutSummary
-                workout = WorkoutSummary(config, sets)
-                st.subheader("Workout Totals")
-                st.write(f"**Total Distance:** {workout.total_distance()} {config.unit_symbol}")
-                if workout.total_time_seconds() > 0:
-                    st.write(f"**Total Time:** {workout.format_time(workout.total_time_seconds())}")
+                
                 
             except Exception as e:
                 st.error("Error parsing workout:")
