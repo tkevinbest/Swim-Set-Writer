@@ -193,12 +193,51 @@ Cool Down:
         # Text editor
         st.markdown("**💡 Tip:** Use 2 spaces for indentation (not tabs). Copy the example below to get started.")
         
+        # Upload .prac file to populate editor
+        uploaded_file = st.file_uploader(
+            "Upload a .prac file",
+            type=["prac", "txt"],
+            accept_multiple_files=False,
+            help="Load an existing practice file into the editor.",
+        )
+        if uploaded_file is not None:
+            try:
+                uploaded_text = uploaded_file.read().decode("utf-8", errors="ignore")
+                st.session_state["workout_editor"] = uploaded_text
+                st.success("Loaded " + uploaded_file.name + " file into the editor.")
+            except Exception as e:
+                st.error(f"Failed to read uploaded file: {str(e)}")
+        
         workout_text = st.text_area(
             "Enter your workout in .prac format: [syntax help](https://github.com/tkevinbest/Swim-Set-Writer/blob/main/SYNTAX.md)",
             height=400,
             placeholder="title: My Practice\nunits: yards\ncourse: short\n\nWarmup:\n  200 swim @ 3:00\n\nMain Set:\n  4x100 swim @ 1:30\n\nCool Down:\n  200 easy",
             help="Write your workout using the .prac format. Use 2 spaces for indentation. See the sidebar for examples and syntax help.",
             key="workout_editor"
+        )
+        
+        # Download current editor content as .prac
+        prac_filename = "workout.prac"
+        if workout_text.strip():
+            try:
+                with tempfile.NamedTemporaryFile(mode='w', suffix='.prac', delete=False) as temp_prac:
+                    temp_prac.write(workout_text)
+                    temp_prac_path = temp_prac.name
+                config_for_name, _ = parse_prac(temp_prac_path)
+                os.unlink(temp_prac_path)
+                if getattr(config_for_name, 'title', None):
+                    clean_title = re.sub(r'[<>:"/\\|?*]', '_', config_for_name.title.strip())
+                    if clean_title:
+                        prac_filename = f"{clean_title}.prac"
+            except Exception:
+                # Fallback to default filename if parsing for name fails
+                pass
+        st.download_button(
+            label="📥 Download .prac",
+            data=workout_text.encode("utf-8"),
+            file_name=prac_filename,
+            mime="text/plain",
+            use_container_width=True
         )
         
         # Generate PDF button
