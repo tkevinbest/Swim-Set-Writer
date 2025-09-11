@@ -8,6 +8,13 @@ A simple tool to write swimming workouts in plain text and generate professional
 
 ## Quick Start
 
+### Option 1: Web App (Recommended)
+Use the online web app - no installation required:
+1. Visit the [Swim Set Writer Web App](https://swim-set-writer.streamlit.app) (coming soon)
+2. Write your workout in the text editor
+3. Click "Generate PDF" to download
+
+### Option 2: Command Line
 Write your workout in a `.prac` file:
 
 ```prac
@@ -36,10 +43,12 @@ python generate_pdf.py workout.prac
 
 ## Features
 
+- **Web interface** - Use in your browser with no installation required
 - **Simple syntax** - Write workouts in plain text
 - **Multiple groups** - Include variations for swimmers of different speeds
 - **Automatic calculations** - Total distances and times
 - **Comments** - Add notes to sets and exercises
+- **Live preview** - See parsed workout before generating PDF
 
 ## Installation
 
@@ -262,15 +271,22 @@ This project uses GitHub Actions to automatically run tests on every push to mai
 
 The CI/CD pipeline ensures code quality and compatibility across different Python versions and operating systems.
 
-## Future Plans
+## Web App
 
-### Web Interface (Streamlit Cloud)
-We plan to deploy this as a web application on Streamlit Cloud, providing:
+### Streamlit Cloud Deployment
+The web application is ready for deployment on Streamlit Cloud, providing:
 - **Online text editor** for writing .prac files
 - **Real-time preview** of parsed workouts
 - **One-click PDF generation** and download
 - **Public sharing** via web URL
 - **No installation required** - works in any browser
 
-This will make the tool accessible to coaches and swimmers without needing to install Python or run commands locally.
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for deployment instructions.
+
+### Local Development
+To run the web app locally:
+```bash
+pip install streamlit
+streamlit run app.py
+```
 
