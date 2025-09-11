@@ -4,17 +4,19 @@
 [![Python Versions](https://github.com/tkevinbest/Swim-Set-Writer/workflows/Test%20Python%20Versions/badge.svg)](https://github.com/tkevinbest/Swim-Set-Writer/actions)
 [![Windows](https://github.com/tkevinbest/Swim-Set-Writer/workflows/Windows%20Test/badge.svg)](https://github.com/tkevinbest/Swim-Set-Writer/actions)
 
-A simple tool to write swimming workouts in plain text and generate professional PDFs.
+A simple tool to write swimming workouts in plain text and generate well-formatted PDFs.
 
 ## Quick Start
+The easiest way to use the swim set practice writer tool is via the [web app](https://swim-set-writer.streamlit.app). No installation required! 
 
-### Option 1: Web App (Recommended)
-Use the online web app - no installation required:
-1. Visit the [Swim Set Writer Web App](https://swim-set-writer.streamlit.app) (coming soon)
-2. Write your workout in the text editor
-3. Click "Generate PDF" to download
+## Features
+- **Simple syntax** - Write workouts in plain text
+- **Multiple groups** - Easily include variations for swimmers of different speeds
+- **Automatic calculations** - Total distances and times
+- **Comments** - Add notes to sets and exercises
+- **Clean output** - Well-formatted PDFs with proper styling for each group
 
-### Option 2: Command Line
+## Syntax Overview
 Write your workout in a `.prac` file:
 
 ```prac
@@ -39,24 +41,21 @@ Generate a PDF:
 python generate_pdf.py workout.prac
 ```
 
-**Result:** [Professional PDF with separate pages for different speed groups](./examples/example.pdf)
+**Result:** [PDF with separate pages for different speed groups](./examples/example.pdf)
 
-## Features
 
-- **Web interface** - Use in your browser with no installation required
-- **Simple syntax** - Write workouts in plain text
-- **Multiple groups** - Include variations for swimmers of different speeds
-- **Automatic calculations** - Total distances and times
-- **Comments** - Add notes to sets and exercises
-- **Live preview** - See parsed workout before generating PDF
 
-## Installation
+## 🛠️ Development Installation
+
+*Only needed if you want to run the command-line tools or contribute to the project:*
 
 1. Clone this repository
 2. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
+
+**For most users:** Just use the [web app](https://swim-set-writer.streamlit.app) - no installation needed!
 
 ## Usage
 
@@ -116,7 +115,7 @@ python generate_pdf.py workout.prac my_workout.pdf "Custom Title"
 - **# COMMENT**: Optional comment at end of line
 
 #### Group Variations
-Create different workouts for different swimmer speeds using bracket notation. These are optional and can include either different distances, intervals, descriptions, or any combinaion. 
+Create different workouts for different swimmer speeds using bracket notation. These are optional and can include either different distances, intervals, descriptions, or any combination. 
 
 ```
 # Different distances
@@ -236,6 +235,7 @@ Feel free to enhance the parser, add new features, or improve the PDF formatting
 ### Project Structure
 
 - `parse.py` - Core parser and workout analysis
+- `app.py` - Streamlit app code
 - `generate_pdf.py` - PDF generation functionality  
 - `README.md` - This documentation
 - `requirements.txt` - Python dependencies
@@ -266,27 +266,11 @@ This project uses GitHub Actions to automatically run tests on every push to mai
 - **Quick Test**: Fast testing on Python 3.12 (Ubuntu)
 - **Python Versions**: Multi-version testing on Python 3.9, 3.10, 3.11, and 3.12 (Ubuntu)
 - **Windows Test**: Cross-platform testing on Windows with Python 3.12
-- **Automatic execution**: Tests run on every push and pull request
-- **Status badges**: Check the Actions tab to see test results
-
-The CI/CD pipeline ensures code quality and compatibility across different Python versions and operating systems.
-
-## Web App
-
-### Streamlit Cloud Deployment
-The web application is ready for deployment on Streamlit Cloud, providing:
-- **Online text editor** for writing .prac files
-- **Real-time preview** of parsed workouts
-- **One-click PDF generation** and download
-- **Public sharing** via web URL
-- **No installation required** - works in any browser
-
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for deployment instructions.
 
 ### Local Development
 To run the web app locally:
 ```bash
 pip install streamlit
-streamlit run app.py
+python -m streamlit run app.py
 ```
 
