@@ -118,7 +118,7 @@ def main():
         """)
         
         # Show full syntax in expander
-        with st.expander("📖 View Complete Syntax Reference"):
+        with st.expander("📖 View Complete `.prac` Syntax Reference"):
             try:
                 with open("SYNTAX.md", "r", encoding="utf-8") as f:
                     full_syntax = f.read()
@@ -194,7 +194,7 @@ Cool Down:
         st.markdown("**💡 Tip:** Use 2 spaces for indentation (not tabs). Copy the example below to get started.")
         
         workout_text = st.text_area(
-            "Enter your workout in .prac format:",
+            "Enter your workout in .prac format: [syntax help](https://github.com/tkevinbest/Swim-Set-Writer/blob/main/SYNTAX.md)",
             height=400,
             placeholder="title: My Practice\nunits: yards\ncourse: short\n\nWarmup:\n  200 swim @ 3:00\n\nMain Set:\n  4x100 swim @ 1:30\n\nCool Down:\n  200 easy",
             help="Write your workout using the .prac format. Use 2 spaces for indentation. See the sidebar for examples and syntax help.",
