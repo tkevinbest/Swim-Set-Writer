@@ -4,6 +4,7 @@ A web interface for creating and generating swim workout PDFs
 """
 
 import streamlit as st
+import pandas as pd
 import tempfile
 import os
 import re
@@ -315,13 +316,26 @@ Cool Down:
                     st.write(f"**Pool:** {config.course} {config.units.title()}")
                 if config.author:
                     st.write(f"**Author:** {config.author}")
-
-                # Workout totals
+                st.write(f"**Totals:**")
+                # Workout totals (show table if multiple groups)
                 from parse import WorkoutSummary
                 workout = WorkoutSummary(config, sets)
-                st.write(f"**Total Distance:** {workout.total_distance()} {config.unit_symbol}")
-                if workout.total_time_seconds() > 0:
-                    st.write(f"**Total Time:** {workout.format_time(workout.total_time_seconds())}")
+                all_groups = workout.get_all_groups()
+                if len(all_groups) > 1:
+                    distance_row = {"": "Total Distance"}
+                    time_row = {"": "Total Time"}
+                    for group in all_groups:
+                        distance_row[group] = f"{workout.total_distance(group)} {config.unit_symbol}"
+                        total_secs = workout.total_time_seconds(group)
+                        time_row[group] = workout.format_time(total_secs) if total_secs > 0 else "No intervals"
+                    df_totals = pd.DataFrame([distance_row, time_row])
+                    st.dataframe(df_totals, hide_index=True, use_container_width=True)
+                else:
+                    g = all_groups[0]
+                    st.write(f"**Total Distance:** {workout.total_distance(g)} {config.unit_symbol}")
+                    total_secs = workout.total_time_seconds(g)
+                    if total_secs > 0:
+                        st.write(f"**Total Time:** {workout.format_time(total_secs)}")
                 
                 st.subheader("Sets")
                 for i, set_ in enumerate(sets, 1):
@@ -332,7 +346,20 @@ Cool Down:
                             st.write(f"**Repeat:** {set_.repeat}x")
                         for item in set_.items:
                             st.write(f"• {item}")
-                        st.write(f"**Total Distance:** {set_.total_distance()} {config.unit_symbol}")
+                        # Set totals (table if multiple groups)
+                        groups_in_set = workout.get_all_groups()
+                        if len(groups_in_set) > 1:
+                            distance_row = {"": "Set Distance"}
+                            time_row = {"": "Set Time"}
+                            for group in groups_in_set:
+                                distance_row[group] = f"{set_.total_distance(group)} {config.unit_symbol}"
+                                secs = set_.total_time_seconds(group)
+                                time_row[group] = workout.format_time(secs) if secs > 0 else "No intervals"
+                            df_set = pd.DataFrame([distance_row, time_row])
+                            st.dataframe(df_set, hide_index=True, use_container_width=True)
+                        else:
+                            g = groups_in_set[0]
+                            st.write(f"**Total Distance:** {set_.total_distance(g)} {config.unit_symbol}")
                 
                 
                 
